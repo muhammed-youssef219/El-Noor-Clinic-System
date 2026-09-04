@@ -1,0 +1,334 @@
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600&display=swap');
+
+/* ------------------------------------------------------------------ */
+/* Theme tokens — light (default) + dark override via [data-theme]     */
+/* ------------------------------------------------------------------ */
+:root {
+  --ink: #16221f;
+  --ink-soft: #4b5a56;
+  --ink-faint: #8a9793;
+  --paper: #f5f7f5;
+  --card: #ffffff;
+  --card-2: #f6f6f5;
+  --line: #dde3e0;
+  --line-soft: #e9edeb;
+  --overlay: rgba(20, 28, 26, 0.45);
+  --scrollbar-thumb: #cfd8d5;
+
+  --primary: #0f6e6e;
+  --primary-dark: #0a4f4f;
+  --primary-soft: #e1f0ee;
+  --accent: #b5622f;
+  --accent-soft: #f7e9df;
+  --gold: #b8862f;
+  --gold-soft: #f6eedb;
+  --danger: #b0453c;
+  --danger-soft: #f8e6e4;
+  --success: #3f7d54;
+  --success-soft: #e5f1e7;
+  --info: #35618c;
+  --info-soft: #e5eef5;
+
+  --spec-general-c: #35618c;
+  --spec-general-bg: #e5eef5;
+  --spec-dermatology-c: #a3457e;
+  --spec-dermatology-bg: #f6e6ef;
+  --spec-dental-c: #0f6e6e;
+  --spec-dental-bg: #e1f0ee;
+  --spec-obgyn-c: #b0453c;
+  --spec-obgyn-bg: #f8e6e4;
+  --spec-pediatrics-c: #b8862f;
+  --spec-pediatrics-bg: #f6eedb;
+  --spec-orthopedics-c: #5a5a86;
+  --spec-orthopedics-bg: #e9e9f4;
+  --spec-cardiology-c: #8a3030;
+  --spec-cardiology-bg: #f3e1e1;
+  --spec-ophthalmology-c: #3f7d54;
+  --spec-ophthalmology-bg: #e5f1e7;
+}
+
+:root[data-theme='dark'] {
+  --ink: #f1f5f3;
+  --ink-soft: #b7c4bf;
+  --ink-faint: #a3b0aa;
+  --paper: #0a0f0e;
+  --card: #1b2622;
+  --card-2: #23312c;
+  --line: #3c4c45;
+  --line-soft: #2b3934;
+  --overlay: rgba(0, 0, 0, 0.65);
+  --scrollbar-thumb: #435349;
+
+  --primary: #4dc4b5;
+  --primary-dark: #0a4f4f;
+  --primary-soft: #234d47;
+  --accent: #eb9c68;
+  --accent-soft: #47301f;
+  --gold: #e6b355;
+  --gold-soft: #453619;
+  --danger: #ea9086;
+  --danger-soft: #482621;
+  --success: #7dd299;
+  --success-soft: #1f3d29;
+  --info: #85b6de;
+  --info-soft: #223447;
+
+  --spec-general-c: #8dc0ea;
+  --spec-general-bg: #22364a;
+  --spec-dermatology-c: #e6a0cd;
+  --spec-dermatology-bg: #402634;
+  --spec-dental-c: #4dc4b5;
+  --spec-dental-bg: #234d47;
+  --spec-obgyn-c: #ea9086;
+  --spec-obgyn-bg: #482621;
+  --spec-pediatrics-c: #e6b355;
+  --spec-pediatrics-bg: #453619;
+  --spec-orthopedics-c: #b3b3e6;
+  --spec-orthopedics-bg: #2e2e4a;
+  --spec-cardiology-c: #e29999;
+  --spec-cardiology-bg: #402828;
+  --spec-ophthalmology-c: #7dd299;
+  --spec-ophthalmology-bg: #1f3d29;
+}
+
+/* ------------------------------------------------------------------ */
+/* Base + resets                                                       */
+/* ------------------------------------------------------------------ */
+* { box-sizing: border-box; }
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: 'Tajawal', 'IBM Plex Sans', sans-serif;
+  color: var(--ink);
+  background: var(--paper);
+  direction: rtl;
+  transition: background-color .15s ease, color .15s ease;
+}
+
+.mono { font-family: 'IBM Plex Sans', sans-serif; direction: ltr; unicode-bidi: isolate; }
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 8px; }
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+
+.btn {
+  display: inline-flex; align-items: center; gap: 6px; font-family: inherit;
+  font-weight: 700; font-size: 13.5px; border-radius: 10px; padding: 9px 16px;
+  cursor: pointer; border: 1px solid transparent; transition: all .15s ease;
+  white-space: nowrap;
+}
+.btn:disabled { cursor: not-allowed; }
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--primary-dark); }
+.btn-outline { background: var(--card); border-color: var(--line); color: var(--ink); }
+.btn-outline:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); }
+.btn-ghost { background: transparent; color: var(--ink-soft); }
+.btn-ghost:hover:not(:disabled) { background: var(--line-soft); }
+
+input, select, textarea {
+  font-family: inherit; font-size: 13.5px; border: 1px solid var(--line);
+  border-radius: 10px; padding: 9px 12px; background: var(--card); color: var(--ink);
+  width: 100%; outline: none;
+}
+input::placeholder, textarea::placeholder { color: var(--ink-faint); }
+input:focus, select:focus, textarea:focus {
+  border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-soft);
+}
+
+label { font-size: 12.5px; font-weight: 700; color: var(--ink-soft); display: block; margin-bottom: 5px; }
+
+.badge {
+  display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px;
+  font-weight: 700; padding: 3px 10px; border-radius: 999px;
+}
+
+.specialty-tag[data-specialty] {
+  color: var(--spec-general-c);
+  background: var(--spec-general-bg);
+}
+.specialty-tag[data-specialty='dermatology'] { color: var(--spec-dermatology-c); background: var(--spec-dermatology-bg); }
+.specialty-tag[data-specialty='dental'] { color: var(--spec-dental-c); background: var(--spec-dental-bg); }
+.specialty-tag[data-specialty='obgyn'] { color: var(--spec-obgyn-c); background: var(--spec-obgyn-bg); }
+.specialty-tag[data-specialty='pediatrics'] { color: var(--spec-pediatrics-c); background: var(--spec-pediatrics-bg); }
+.specialty-tag[data-specialty='orthopedics'] { color: var(--spec-orthopedics-c); background: var(--spec-orthopedics-bg); }
+.specialty-tag[data-specialty='cardiology'] { color: var(--spec-cardiology-c); background: var(--spec-cardiology-bg); }
+.specialty-tag[data-specialty='ophthalmology'] { color: var(--spec-ophthalmology-c); background: var(--spec-ophthalmology-bg); }
+.specialty-border[data-specialty] { border-color: var(--spec-general-c); }
+.specialty-border[data-specialty='dermatology'] { border-color: var(--spec-dermatology-c); }
+.specialty-border[data-specialty='dental'] { border-color: var(--spec-dental-c); }
+.specialty-border[data-specialty='obgyn'] { border-color: var(--spec-obgyn-c); }
+.specialty-border[data-specialty='pediatrics'] { border-color: var(--spec-pediatrics-c); }
+.specialty-border[data-specialty='orthopedics'] { border-color: var(--spec-orthopedics-c); }
+.specialty-border[data-specialty='cardiology'] { border-color: var(--spec-cardiology-c); }
+.specialty-border[data-specialty='ophthalmology'] { border-color: var(--spec-ophthalmology-c); }
+
+table { width: 100%; border-collapse: collapse; }
+th { text-align: right; font-size: 11.5px; font-weight: 700; color: var(--ink-faint); text-transform: uppercase; letter-spacing: .03em; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+td { padding: 12px 14px; font-size: 13.5px; border-bottom: 1px solid var(--line-soft); }
+tr:last-child td { border-bottom: none; }
+tr.row-hover:hover { background: var(--primary-soft); cursor: pointer; }
+
+.sidebar-item {
+  display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+  border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 500;
+  color: rgba(255,255,255,.72); transition: all .15s ease;
+}
+.sidebar-item:hover { background: rgba(255,255,255,.06); color: #fff; }
+.sidebar-item.active { background: rgba(255,255,255,.12); color: #fff; font-weight: 700; }
+
+.theme-toggle {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 9px; border: 1px solid var(--line);
+  background: var(--card); color: var(--ink-soft); cursor: pointer; transition: all .15s ease;
+}
+.theme-toggle:hover { border-color: var(--primary); color: var(--primary); }
+
+@keyframes clinic-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .45; }
+}
+
+@keyframes clinic-float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-18px) rotate(4deg); }
+}
+
+@keyframes clinic-float-alt {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(16px) rotate(-5deg); }
+}
+
+@keyframes clinic-glow {
+  0%, 100% { opacity: .5; }
+  50% { opacity: 1; }
+}
+
+@keyframes clinic-heartbeat-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* ------------------------------------------------------------------ */
+/* Public landing page — responsive layout                             */
+/* ------------------------------------------------------------------ */
+.landing-navbar { padding: 14px 28px; }
+.landing-nav-links { display: flex; align-items: center; gap: 22px; }
+
+.landing-hero {
+  display: grid; grid-template-columns: 1fr 1.1fr; gap: 40px; align-items: center;
+  max-width: 1180px; margin: 0 auto; padding: 56px 28px;
+}
+.landing-hero-visual { height: 320px; }
+.landing-hero-title { font-size: 32px; }
+
+.landing-section { padding: 48px 28px; max-width: 1180px; margin: 0 auto; }
+
+/* Generic responsive card grids — reused outside the landing page too
+   (doctor cards, etc.), not just here. */
+.card-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.card-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+
+.landing-footer-inner {
+  max-width: 1180px; margin: 0 auto; padding: 32px 28px;
+  display: flex; justify-content: space-between; flex-wrap: wrap; gap: 20px;
+}
+
+@media (max-width: 900px) {
+  .card-grid-3 { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 860px) {
+  .landing-navbar { padding: 12px 16px; }
+  .landing-hero { grid-template-columns: 1fr; gap: 24px; padding: 36px 20px; }
+  .landing-hero-visual { height: 220px; }
+  .landing-hero-title { font-size: 26px; }
+  .landing-section { padding: 32px 16px; }
+  .card-grid-4 { grid-template-columns: repeat(2, 1fr); }
+  .landing-nav-links { display: none; }
+}
+
+@media (max-width: 560px) {
+  .card-grid-3 { grid-template-columns: 1fr; }
+  .landing-hero-title { font-size: 22px; }
+}
+
+/* ------------------------------------------------------------------ */
+/* Authenticated dashboards — responsive layout                        */
+/* ------------------------------------------------------------------ */
+.app-sidebar { width: 230px; }
+.mobile-menu-btn { display: none; }
+.sidebar-backdrop { display: none; }
+.app-main { padding: 24px; }
+
+/* Generic stat-card row: pass column count via --cols on the element. */
+.stat-grid { display: grid; gap: 14px; grid-template-columns: repeat(var(--cols, 4), 1fr); }
+
+/* Generic two/three-way split layout: pass the ratio via --split. */
+.split-grid { display: grid; gap: 14px; grid-template-columns: var(--split, 1fr 1fr); }
+
+.table-scroll { overflow-x: auto; }
+
+.slot-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+@media (max-width: 420px) {
+  .slot-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+.med-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 6px; }
+@media (max-width: 640px) {
+  .med-row { grid-template-columns: 1fr 1fr; }
+}
+
+.role-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.login-shell { padding: 60px 20px; }
+@media (max-width: 380px) {
+  .role-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+  .login-shell { padding: 32px 16px; }
+}
+
+@media (max-width: 860px) {
+  .app-sidebar {
+    position: fixed; top: 0; right: 0; bottom: 0; z-index: 60; width: 250px;
+    transform: translateX(100%); transition: transform .2s ease; overflow-y: auto;
+  }
+  .app-sidebar.open { transform: translateX(0); }
+  .mobile-menu-btn { display: inline-flex; }
+  .sidebar-backdrop.open { display: block; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 55; }
+
+  .split-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 700px) {
+  .stat-grid { grid-template-columns: repeat(2, 1fr); }
+  .app-main { padding: 16px; }
+}
+
+@media (max-width: 480px) {
+  .stat-grid { grid-template-columns: 1fr; }
+  .topbar-user-text { display: none; }
+}
+
+/* ------------------------------------------------------------------ */
+/* Print — prescriptions and invoices                                  */
+/* ------------------------------------------------------------------ */
+.print-sheet { display: none; }
+
+@media print {
+  body * { visibility: hidden; }
+  .print-sheet, .print-sheet * { visibility: visible; }
+  .print-sheet {
+    display: block !important;
+    position: absolute; inset: 0; width: 100%;
+    background: #fff; color: #111;
+  }
+}

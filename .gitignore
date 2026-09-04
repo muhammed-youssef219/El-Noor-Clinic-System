@@ -1,0 +1,33 @@
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# PHP / Laravel
+**/vendor/
+**/storage/*.key
+**/storage/logs/
+**/storage/framework/cache/
+**/storage/framework/sessions/
+**/storage/framework/testing/
+**/storage/framework/views/
+**/bootstrap/cache/*
+!**/bootstrap/cache/.gitignore
+**/database/*.sqlite
+**/database/*.sqlite-journal
+
+# Node / Next.js
+**/node_modules/
+**/.next/
+**/out/
+**/coverage/
+
+# Local editor and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs and temporary files
+*.log
+*.tmp

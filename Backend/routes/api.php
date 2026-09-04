@@ -1,0 +1,63 @@
+<?php
+
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\ClinicController;
+use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Route;
+
+Route::prefix('v1')->middleware(StartSession::class)->group(function (): void {
+    Route::post('auth/login', [AuthController::class, 'login'])->middleware('throttle:login');
+    Route::middleware('auth:sanctum')->group(function (): void {
+        Route::post('auth/logout', [AuthController::class, 'logout']);
+        Route::get('auth/me', [AuthController::class, 'me']);
+        Route::post('auth/change-password', [AuthController::class, 'changePassword']);
+        Route::get('doctors/{doctor}', [ClinicController::class, 'doctor']);
+        Route::get('doctors/{doctor}/availability', [ClinicController::class, 'availability']);
+        Route::post('doctors', [ClinicController::class, 'storeDoctor']);
+        Route::patch('doctors/{doctor}', [ClinicController::class, 'updateDoctor']);
+        Route::delete('doctors/{doctor}', [ClinicController::class, 'deleteDoctor']);
+        Route::post('doctors/{doctor}/photo', [ClinicController::class, 'uploadDoctorPhoto']);
+        Route::get('specialties', [ClinicController::class, 'specialties']);
+        Route::get('patients', [ClinicController::class, 'patients']);
+        Route::get('patients/{patient}', [ClinicController::class, 'patient']);
+        Route::post('patients', [ClinicController::class, 'storePatient']);
+        Route::patch('patients/{patient}', [ClinicController::class, 'updatePatient']);
+        Route::get('appointments', [ClinicController::class, 'appointments']);
+        Route::post('appointments', [ClinicController::class, 'storeAppointment']);
+        Route::patch('appointments/{appointment}/status', [ClinicController::class, 'updateAppointmentStatus']);
+        Route::get('medical-records', [ClinicController::class, 'medicalRecords']);
+        Route::post('medical-records', [ClinicController::class, 'storeMedicalRecord']);
+        Route::patch('medical-records/{medicalRecord}', [ClinicController::class, 'updateMedicalRecord']);
+        Route::get('invoices', [ClinicController::class, 'invoices']);
+        Route::post('invoices', [ClinicController::class, 'storeInvoice']);
+        Route::patch('invoices/{invoice}/mark-paid', [ClinicController::class, 'markInvoicePaid']);
+        Route::post('invoices/{invoice}/payment-proof', [ClinicController::class, 'uploadPaymentProof']);
+        Route::post('invoices/{invoice}/payment-proof/{decision}', [ClinicController::class, 'reviewPaymentProof']);
+        Route::post('services-catalog', [ClinicController::class, 'storeService']);
+        Route::patch('services-catalog/{serviceCatalogItem}', [ClinicController::class, 'updateService']);
+        Route::delete('services-catalog/{serviceCatalogItem}', [ClinicController::class, 'deleteService']);
+        Route::get('users', [ClinicController::class, 'users']);
+        Route::post('users', [ClinicController::class, 'storeUser']);
+        Route::patch('users/{user}', [ClinicController::class, 'updateUser']);
+        Route::delete('users/{user}', [ClinicController::class, 'deleteUser']);
+        Route::get('leaves', [ClinicController::class, 'leaves']);
+        Route::post('leaves', [ClinicController::class, 'storeLeave']);
+        Route::patch('leaves/{leave}', [ClinicController::class, 'updateLeave']);
+        Route::get('schedule-exceptions', [ClinicController::class, 'exceptions']);
+        Route::post('schedule-exceptions', [ClinicController::class, 'storeException']);
+        Route::delete('schedule-exceptions/{scheduleException}', [ClinicController::class, 'deleteException']);
+        Route::get('notifications', [ClinicController::class, 'notifications']);
+        Route::patch('notifications/read-all', [ClinicController::class, 'readAllNotifications']);
+        Route::delete('notifications', [ClinicController::class, 'clearNotifications']);
+        Route::delete('notifications/clear', [ClinicController::class, 'clearNotifications']);
+        Route::patch('notifications/{notification}/read', [ClinicController::class, 'readNotification']);
+        Route::delete('notifications/{notification}', [ClinicController::class, 'deleteNotification']);
+        Route::get('audit-log', [ClinicController::class, 'auditLog']);
+        Route::get('settings', [ClinicController::class, 'settings']);
+        Route::patch('settings', [ClinicController::class, 'updateSettings']);
+        Route::get('dashboard', [ClinicController::class, 'dashboard']);
+    });
+    Route::get('doctors', [ClinicController::class, 'doctors']);
+    Route::get('services-catalog', [ClinicController::class, 'services']);
+    Route::post('patients/register', [ClinicController::class, 'storePatient']);
+});
