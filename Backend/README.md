@@ -1,58 +1,201 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+﻿# Al Noor Clinic System — Backend API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+نظام إدارة عيادات النور — الخادم الخلفي مبني بـ Laravel 13 مع دعم كامل للنشر على Render.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Requirements
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### البيئة المحلية
+| المكتبة        | الإصدار المطلوب |
+|----------------|----------------|
+| PHP            | >= 8.3         |
+| Composer       | >= 2.x         |
+| SQLite         | مدمج مع PHP    |
+| Node.js        | >= 18.x        |
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### على Render (Production)
+| المكتبة    | الإصدار                          |
+|------------|----------------------------------|
+| PHP        | 8.3 (Docker: php:8.3-cli)        |
+| PostgreSQL | 15+ (Render managed DB)          |
+| Composer   | 2.x (مثبّت تلقائياً عبر Docker)  |
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## مكتبات PHP (Composer Dependencies)
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+### Production
+```
+laravel/framework   ^13.17   (إطار العمل الأساسي)
+laravel/sanctum     ^4.0     (المصادقة عبر API tokens)
+laravel/tinker      ^3.0     (CLI للتفاعل مع DB)
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+### Development فقط - لا تُرفع على Render
+```
+fakerphp/faker          ^1.23   (توليد بيانات وهمية)
+laravel/pint            ^1.27   (تنسيق الكود)
+phpunit/phpunit         ^12.5   (اختبارات الوحدة)
+mockery/mockery         ^1.6    (Mock objects)
+nunomaduro/collision    ^8.6    (عرض أخطاء CLI)
+```
 
-## Contributing
+---
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Docker PHP Extensions المثبّتة
 
-## Code of Conduct
+```
+pdo_pgsql   الاتصال بقاعدة بيانات PostgreSQL
+zip         فك ضغط مكتبات Composer
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+---
 
-## Security Vulnerabilities
+## خطوات النشر على Render
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### الخطوة 1 - إنشاء قاعدة البيانات PostgreSQL
+1. اذهب إلى render.com -> New -> PostgreSQL
+2. اختر اسم مثل el-noor-db
+3. احفظ: Host, Port (5432), Database, Username, Password
 
-## License
+### الخطوة 2 - إنشاء Web Service
+1. New -> Web Service -> اربطه بـ GitHub repo
+2. الإعدادات:
+   - Root Directory: Backend
+   - Runtime: Docker
+   - Plan: Free
+   - Health Check Path: /up
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### الخطوة 3 - متغيرات البيئة على Render
+
+```
+APP_NAME=Al Noor Specialized Clinics
+APP_ENV=production
+APP_DEBUG=false
+APP_KEY=                    (شغّل: php artisan key:generate --show)
+APP_URL=https://your-app.onrender.com
+APP_TIMEZONE=Africa/Cairo
+
+LOG_CHANNEL=stderr
+
+DB_CONNECTION=pgsql
+DB_HOST=                    (من Render PostgreSQL)
+DB_PORT=5432
+DB_DATABASE=                (من Render PostgreSQL)
+DB_USERNAME=                (من Render PostgreSQL)
+DB_PASSWORD=                (من Render PostgreSQL)
+DB_SSLMODE=require
+
+SESSION_DRIVER=database
+SESSION_LIFETIME=120
+SESSION_ENCRYPT=false
+SESSION_SECURE_COOKIE=true
+
+CACHE_STORE=database
+QUEUE_CONNECTION=database
+
+SANCTUM_EXPIRATION=120
+SANCTUM_STATEFUL_DOMAINS=your-frontend.vercel.app
+CORS_ALLOWED_ORIGINS=https://your-frontend.vercel.app
+```
+
+### الخطوة 4 - توليد APP_KEY
+```bash
+php artisan key:generate --show
+```
+انسخ القيمة وضعها في APP_KEY على Render.
+
+### الخطوة 5 - Deploy
+Render سيبني Docker image تلقائياً وينفّذ:
+```bash
+php artisan migrate --force
+php artisan db:seed --force
+php artisan serve --host=0.0.0.0 --port=10000
+```
+
+---
+
+## قاعدة البيانات
+
+### محلياً (SQLite)
+```
+DB_CONNECTION=sqlite
+# الملف: database/database.sqlite
+```
+
+### على Render (PostgreSQL)
+```
+DB_CONNECTION=pgsql
+DB_SSLMODE=require
+```
+
+---
+
+## الـ Migrations
+
+```bash
+php artisan migrate
+php artisan migrate:fresh --seed   (محلياً فقط)
+```
+
+---
+
+## البيانات التجريبية (Seeders)
+
+```bash
+php artisan db:seed
+php artisan db:seed --class=DemoDataSeeder
+```
+
+### الحسابات بعد الـ Seed
+
+| الدور     | الإيميل                   | الباسورد     |
+|-----------|--------------------------|--------------|
+| Admin     | admin@alnoor.test        | Password123! |
+| Reception | reception@alnoor.test    | Password123! |
+| Doctor    | dr.noura@alnoor.test     | Password123! |
+| Doctor    | dr.omar@alnoor.test      | Password123! |
+| Doctor    | dr.laila@alnoor.test     | Password123! |
+
+---
+
+## API Endpoints - المصادقة
+
+| Endpoint     | Method | الوظيفة          |
+|--------------|--------|-----------------|
+| /api/login   | POST   | تسجيل الدخول    |
+| /api/logout  | POST   | تسجيل الخروج    |
+| /api/user    | GET    | المستخدم الحالي |
+| /up          | GET    | Health Check    |
+
+---
+
+## أوامر مفيدة
+
+```bash
+php artisan serve --port=8000
+php artisan route:list
+php artisan optimize:clear
+php artisan db:seed --class=DemoDataSeeder
+```
+
+---
+
+## استكشاف الأخطاء على Render
+
+| المشكلة              | الحل                                           |
+|----------------------|------------------------------------------------|
+| APP_KEY غير موجود   | php artisan key:generate --show                |
+| خطأ في DB           | تحقق من DB_* وأن DB_SSLMODE=require            |
+| CORS error          | أضف Frontend URL في CORS_ALLOWED_ORIGINS        |
+| Build يفشل          | راجع Docker logs في Render dashboard           |
+
+---
+
+## روابط مفيدة
+
+- Laravel 13 Docs: https://laravel.com/docs/13.x
+- Laravel Sanctum: https://laravel.com/docs/13.x/sanctum
+- Render Docker Deploy: https://render.com/docs/deploy-an-image
+- Render PostgreSQL: https://render.com/docs/databases

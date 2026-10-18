@@ -7,21 +7,23 @@ export function useAsync(fetcher, deps = [], options = {}) {
   const [state, setState] = useState({ data: null, loading: true, error: null });
   const latestFetcher = useRef(fetcher);
 
-  useEffect(() => {
-    latestFetcher.current = fetcher;
-  }, [fetcher]);
+  // Update ref directly during render (not in a useEffect) so it is always
+  // current without adding fetcher to any dependency array — which would cause
+  // an infinite loop because callers pass a new arrow-function every render.
+  latestFetcher.current = fetcher;
 
   const reload = useCallback(() => {
     let cancelled = false;
-    setState(s => ({ ...s, loading: true, error: null }));
     latestFetcher.current()
       .then(data => { if (!cancelled) setState({ data, loading: false, error: null }); })
-      .catch(error => { if (!cancelled) setState({ data: null, loading: false, error }); });
+      .catch(error => { if (!cancelled) setState(s => ({ ...s, loading: false, error })); });
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
 
   useEffect(() => {
+    // Show loading spinner only on the very first fetch (data is still null).
+    setState(s => (s.data === null ? { ...s, loading: true, error: null } : s));
     reload();
     if (!intervalMs || intervalMs <= 0) return undefined;
 
