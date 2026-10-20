@@ -89,43 +89,76 @@ export default function LandingBookingModal({ doctor, onClose }) {
 
       // If guest, register or login first
       if (!isPatientLoggedIn) {
+        const cleanEmail = email.trim().toLowerCase();
+        const cleanPhone = phone.trim().replace(/\s+/g, "");
+        const cleanName = name.trim();
+
         if (guestTab === "register") {
-          if (!name.trim()) throw new Error("من فضلك أدخل اسم المريض بالكامل");
-          if (!phone.trim()) throw new Error("من فضلك أدخل رقم الهاتف للتأكيد");
-          if (!email.trim()) throw new Error("من فضلك أدخل البريد الإلكتروني");
+          if (!cleanName) throw new Error("من فضلك أدخل اسم المريض بالكامل");
+          if (!cleanPhone) throw new Error("من فضلك أدخل رقم الهاتف للتأكيد");
+          if (cleanPhone.length < 8) throw new Error("يرجى إدخال رقم هاتف صحيح للتواصل");
+          if (!cleanEmail) throw new Error("من فضلك أدخل البريد الإلكتروني");
+          if (!cleanEmail.includes("@") || !cleanEmail.includes(".")) {
+            throw new Error("يرجى إدخال بريد إلكتروني صالح");
+          }
+          if (password.trim() && password.trim().length < 8) {
+            throw new Error("كلمة المرور يجب ألا تقل عن 8 أحرف");
+          }
           const pass = password.trim() || "Password123!";
 
           try {
-            await registerPatient({
-              name: name.trim(),
-              phone: phone.trim(),
-              email: email.trim(),
+            const patientRes = await registerPatient({
+              name: cleanName,
+              phone: cleanPhone,
+              email: cleanEmail,
               password: pass,
               dob,
               gender,
               consent: true,
             });
 
-            const loggedInUser = await loginRequest(email.trim(), pass, "patient");
+            const loggedInUser = await loginRequest(cleanEmail, pass, "patient");
             login(loggedInUser);
-            activePatientId = loggedInUser?.patientId || loggedInUser?.patient?.id;
+            activePatientId = loggedInUser?.patientId || loggedInUser?.patient?.id || patientRes?.id;
           } catch (regError) {
-            // If email already exists, try logging in
-            try {
-              const loggedInUser = await loginRequest(email.trim(), password || "Password123!", "patient");
-              login(loggedInUser);
-              activePatientId = loggedInUser?.patientId || loggedInUser?.patient?.id;
-            } catch {
-              setGuestTab("login");
-              throw new Error("هذا البريد مسجل لدينا مسبقاً. يرجى كتابة كلمة المرور الصحيحة لتأكيد الحجز.");
+            // Check if the error is specifically that the email already exists in users
+            const isEmailTaken = Boolean(
+              regError?.errors?.email?.some(msg => /taken|مسجل|موجود/i.test(msg)) ||
+              /email.*taken|بريد.*مسجل|البريد.*موجود/i.test(regError?.message || "")
+            );
+
+            if (isEmailTaken) {
+              // If user provided a password, attempt logging in with it
+              if (password.trim()) {
+                try {
+                  const loggedInUser = await loginRequest(cleanEmail, password.trim(), "patient");
+                  login(loggedInUser);
+                  activePatientId = loggedInUser?.patientId || loggedInUser?.patient?.id;
+                } catch {
+                  setGuestTab("login");
+                  throw new Error("هذا البريد الإلكتروني مسجل مسبقاً. كلمة المرور غير صحيحة، يرجى كتابتها للتأكيد.");
+                }
+              } else {
+                setGuestTab("login");
+                throw new Error("هذا البريد الإلكتروني مسجل لدينا مسبقاً. يرجى كتابة كلمة المرور لتسجيل الدخول وتأكيد الحجز.");
+              }
+            } else {
+              // Not an email conflict! Show the exact field error or backend message
+              const firstField = regError?.errors && Object.keys(regError.errors)[0];
+              const fieldError = firstField ? regError.errors[firstField][0] : null;
+              throw new Error(fieldError || regError?.message || "حدث خطأ أثناء تسجيل بيانات المريض");
             }
           }
         } else {
           // Login existing
-          if (!email.trim() || !password) throw new Error("من فضلك أدخل البريد وكلمة المرور");
-          const loggedInUser = await loginRequest(email.trim(), password, "patient");
-          login(loggedInUser);
-          activePatientId = loggedInUser?.patientId || loggedInUser?.patient?.id;
+          if (!cleanEmail || !password) throw new Error("من فضلك أدخل البريد الإلكتروني وكلمة المرور");
+          try {
+            const loggedInUser = await loginRequest(cleanEmail, password, "patient");
+            login(loggedInUser);
+            activePatientId = loggedInUser?.patientId || loggedInUser?.patient?.id;
+          } catch (loginErr) {
+            throw new Error(loginErr?.message || "البريد الإلكتروني أو كلمة المرور غير صحيحة");
+          }
         }
       }
 
@@ -427,10 +460,10 @@ export default function LandingBookingModal({ doctor, onClose }) {
                         />
                       </div>
                       <div>
-                        <label style={{ fontSize: 12.5 }}>كلمة المرور لحسابك (اختياري)</label>
+                        <label style={{ fontSize: 12.5 }}>كلمة المرور (اختياري - 8 أحرف على الأقل)</label>
                         <input
                           type="password"
-                          placeholder="8 أحرف أو اتركه افتراضياً"
+                          placeholder="اتركه فارغاً لإنشاء كلمة مرور تلقائية"
                           value={password}
                           onChange={e => setPassword(e.target.value)}
                         />

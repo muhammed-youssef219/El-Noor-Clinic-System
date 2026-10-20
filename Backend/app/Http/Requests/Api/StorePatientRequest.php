@@ -28,4 +28,17 @@ class StorePatientRequest extends FormRequest
             'address' => ['nullable', 'string'], 'emergency' => ['nullable', 'string'], 'blood' => ['nullable', 'string', 'max:10'], 'allergies' => ['nullable', 'string'], 'chronic' => ['nullable', 'string'], 'consent' => ['required', 'accepted'],
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            'name.required' => 'اسم المريض بالكامل مطلوب.',
+            'phone.required' => 'رقم الهاتف للتأكيد مطلوب.',
+            'consent.accepted' => 'يجب الموافقة على الشروط وسياسة الخصوصية.',
+            'email.email' => 'صيغة البريد الإلكتروني غير صحيحة.',
+            'password.min' => 'كلمة المرور يجب ألا تقل عن 8 أحرف.',
+            'dob.date' => 'تاريخ الميلاد غير صالح.',
+        ];
+    }
 }
+

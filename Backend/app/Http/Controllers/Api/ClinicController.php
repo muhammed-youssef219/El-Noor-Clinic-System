@@ -111,6 +111,12 @@ class ClinicController extends Controller
             $request->validate([
                 'email' => ['required', 'email', 'unique:users,email'],
                 'password' => ['required', 'string', 'min:8'],
+            ], [
+                'email.required' => 'البريد الإلكتروني مطلوب.',
+                'email.email' => 'صيغة البريد الإلكتروني غير صحيحة.',
+                'email.unique' => 'هذا البريد الإلكتروني مسجل لدينا بالفعل.',
+                'password.required' => 'كلمة المرور مطلوبة.',
+                'password.min' => 'كلمة المرور يجب ألا تقل عن 8 أحرف.',
             ]);
         }
         $patient = DB::transaction(function () use ($data) {
