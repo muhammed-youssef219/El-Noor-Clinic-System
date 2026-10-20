@@ -21,18 +21,28 @@ const ROLES = [
 ];
 
 export default function LoginScreen() {
-  const [step, setStep] = useState("role");
+  const searchParams = useSearchParams();
+  const idleLogout = searchParams.get("reason") === "idle";
+  const initialRole = searchParams.get("role");
+  const doctorIdParam = searchParams.get("doctorId");
+
+  const [step, setStep] = useState(
+    initialRole === "patient" || doctorIdParam ? "patient-login" : "role"
+  );
   const [patientEmail, setPatientEmail] = useState("");
   const [patientPassword, setPatientPassword] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const { login } = useAuth();
   const router = useRouter();
-  const idleLogout = useSearchParams().get("reason") === "idle";
 
   function handleLogin(user) {
     login(user);
-    router.replace(`/${user.role}/${NAV[user.role][0].id}`);
+    if (user.role === "patient" && doctorIdParam) {
+      router.replace(`/patient/book?doctorId=${doctorIdParam}`);
+    } else {
+      router.replace(`/${user.role}/${NAV[user.role][0].id}`);
+    }
   }
 
   async function handlePatientLogin(event) {
@@ -52,8 +62,25 @@ export default function LoginScreen() {
       {step === "role" && <div className="role-grid">{ROLES.map(role => <button key={role.id} className="card" onClick={() => setStep(`${role.id}-login`)} style={{ textAlign: "right", padding: 20, cursor: "pointer", border: "1px solid var(--line)", display: "flex", flexDirection: "column", gap: 10, background: "var(--card)" }}><div style={{ width: 38, height: 38, borderRadius: 10, background: "var(--primary-soft)", display: "flex", alignItems: "center", justifyContent: "center" }}><role.icon size={19} color="var(--primary)" /></div><div><div style={{ fontWeight: 800, fontSize: 17 }}>{role.label}</div><div style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-soft)", marginTop: 4 }}>{role.desc}</div></div></button>)}</div>}
       {step === "doctor-login" && <DoctorLoginForm onBack={() => setStep("role")} onSuccess={handleLogin} />}
       {["admin-login", "reception-login"].includes(step) && <StaffLoginForm role={step.replace("-login", "")} onBack={() => setStep("role")} onSuccess={handleLogin} />}
-      {step === "patient-login" && <div className="card" style={{ padding: 20 }}><button className="btn btn-ghost" onClick={() => setStep("patient-register")}><UserPlus size={14} /> مريض جديد</button><form onSubmit={handlePatientLogin} style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 12 }}><input type="email" value={patientEmail} onChange={event => setPatientEmail(event.target.value)} placeholder="البريد الإلكتروني" autoComplete="email" /><input type="password" value={patientPassword} onChange={event => setPatientPassword(event.target.value)} placeholder="كلمة المرور" autoComplete="current-password" />{error && <div style={{ color: "var(--danger)", fontSize: 12.5 }}>{error}</div>}<button className="btn btn-primary" type="submit" disabled={submitting}><LogIn size={15} /> {submitting ? "جارٍ تسجيل الدخول…" : "دخول"}</button></form></div>}
-      {step === "patient-register" && <PatientRegisterForm onBack={() => setStep("patient-login")} onRegistered={(user, doctorId) => { login(user); router.replace(doctorId ? `/patient/book?doctorId=${doctorId}` : "/patient/book"); }} />}
+      {step === "patient-login" && <div className="card" style={{ padding: 20 }}>
+        {doctorIdParam && (
+          <div style={{ background: "var(--primary-soft)", color: "var(--primary)", padding: "10px 14px", borderRadius: 10, fontSize: 13, marginBottom: 14, fontWeight: 700, display: "flex", alignItems: "center", gap: 8 }}>
+            <Info size={16} />
+            سجّل دخولك أو أنشئ حساباً لإتمام حجز كشفك
+          </div>
+        )}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+          <button className="btn btn-ghost" onClick={() => setStep("patient-register")}><UserPlus size={14} /> مريض جديد</button>
+          <button className="btn btn-ghost" onClick={() => setStep("role")} style={{ fontSize: 12.5, color: "var(--ink-faint)" }}>جميع خيارات الدخول</button>
+        </div>
+        <form onSubmit={handlePatientLogin} style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 4 }}>
+          <input type="email" value={patientEmail} onChange={event => setPatientEmail(event.target.value)} placeholder="البريد الإلكتروني" autoComplete="email" />
+          <input type="password" value={patientPassword} onChange={event => setPatientPassword(event.target.value)} placeholder="كلمة المرور" autoComplete="current-password" />
+          {error && <div style={{ color: "var(--danger)", fontSize: 12.5 }}>{error}</div>}
+          <button className="btn btn-primary" type="submit" disabled={submitting}><LogIn size={15} /> {submitting ? "جارٍ تسجيل الدخول…" : "دخول ومتابعة الحجز"}</button>
+        </form>
+      </div>}
+      {step === "patient-register" && <PatientRegisterForm onBack={() => setStep("patient-login")} onRegistered={(user, registeredDocId) => { login(user); const targetDoc = registeredDocId || doctorIdParam; router.replace(targetDoc ? `/patient/book?doctorId=${targetDoc}` : "/patient/book"); }} />}
     </div>
   </div>;
 }

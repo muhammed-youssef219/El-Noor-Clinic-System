@@ -14,19 +14,37 @@ const HERO_IMAGE = "https://images.unsplash.com/photo-1622253692010-333f2da6031d
 export default function HeroSection() {
   const router = useRouter();
   const { role } = useAuth();
-  const bookingTarget = role === "patient" ? "/patient/book" : "/login";
+
+  function handleBookingClick(e) {
+    if (role === "patient") {
+      router.push("/patient/book");
+    } else {
+      e?.preventDefault();
+      const el = document.getElementById("doctors");
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth" });
+      } else {
+        router.push("#doctors");
+      }
+    }
+  }
+
+  function handleDoctorsScroll(e) {
+    e?.preventDefault();
+    const el = document.getElementById("doctors");
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth" });
+    } else {
+      router.push("#doctors");
+    }
+  }
 
   return (
     <section className="landing-hero">
       {/* Right Column: Copy & Actions */}
       <div className="landing-hero-content">
-        <div className="landing-hero-status-pill">
-          <span className="live-dot" />
-          <span>مواعيد الأسبوع الحالي متاحة الآن للحجز الفوري</span>
-        </div>
-
         <h1 className="landing-hero-title">
-          رعاية طبية متكاملة..
+          رعاية طبية متكاملة
           <span className="landing-hero-title-highlight">تُدار بكل عناية واحتراف</span>
         </h1>
 
@@ -37,12 +55,16 @@ export default function HeroSection() {
         <div className="landing-hero-actions">
           <button
             className="btn btn-primary landing-hero-btn-primary"
-            onClick={() => router.push(bookingTarget)}
+            onClick={handleBookingClick}
           >
             <CalendarPlus size={18} />
             <span>احجز موعدك الآن</span>
           </button>
-          <a href="#doctors" className="btn btn-outline landing-hero-btn-secondary">
+          <a
+            href="#doctors"
+            className="btn btn-outline landing-hero-btn-secondary"
+            onClick={handleDoctorsScroll}
+          >
             <Stethoscope size={18} />
             <span>تصفح الأطباء والاستشاريين</span>
           </a>
@@ -91,30 +113,10 @@ export default function HeroSection() {
             />
           </div>
 
-          {/* Floating Card 1: Verified Patient Rating */}
-          <div className="landing-hero-floating-card floating-rating">
-            <div className="floating-rating-stars">
-              <Star size={14} fill="#b8862f" color="#b8862f" />
-              <Star size={14} fill="#b8862f" color="#b8862f" />
-              <Star size={14} fill="#b8862f" color="#b8862f" />
-              <Star size={14} fill="#b8862f" color="#b8862f" />
-              <Star size={14} fill="#b8862f" color="#b8862f" />
-              <span className="floating-rating-score">4.9</span>
-            </div>
-            <div className="floating-rating-text">أكثر من 1,200 تقييم معتمد</div>
-          </div>
 
-          {/* Floating Card 2: Confirmed Booking Toast */}
-          <div className="landing-hero-floating-card floating-appointment">
-            <div className="floating-appt-icon">
-              <CheckCircle2 size={20} color="var(--success)" />
-            </div>
-            <div className="floating-appt-info">
-              <div className="floating-appt-status">تم تأكيد الحجز بنجاح</div>
-              <div className="floating-appt-doctor">د. نورا خالد • استشاري قلب</div>
-              <div className="floating-appt-time">اليوم • 05:30 مساءً</div>
-            </div>
-          </div>
+
+
+
         </div>
       </div>
     </section>

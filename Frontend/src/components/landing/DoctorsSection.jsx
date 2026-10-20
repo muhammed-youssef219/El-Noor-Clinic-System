@@ -17,7 +17,7 @@ export default function DoctorsSection() {
 
   function handleBook(doctorId) {
     if (role === "patient") router.push(`/patient/book?doctorId=${doctorId}`);
-    else router.push("/login");
+    else router.push(`/login?role=patient&doctorId=${doctorId}`);
   }
 
   if (loading) {
