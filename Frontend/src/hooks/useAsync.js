@@ -37,7 +37,11 @@ export function useAsync(fetcher, deps = [], options = {}) {
   useEffect(() => {
     if (!refreshOnFocus || typeof window === "undefined") return undefined;
 
-    const handleFocus = () => reload();
+    const handleFocus = (e) => {
+      if (!e || e.target === window) {
+        reload();
+      }
+    };
     const handleVisibility = () => {
       if (!document.hidden) reload();
     };

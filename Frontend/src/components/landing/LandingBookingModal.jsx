@@ -7,7 +7,9 @@ import {
   CalendarDays, 
   Clock, 
   CheckCircle2, 
-  AlertCircle 
+  AlertCircle,
+  LogIn,
+  UserPlus
 } from "lucide-react";
 import Modal from "../ui/Modal";
 import Avatar from "../ui/Avatar";
@@ -68,7 +70,7 @@ export default function LandingBookingModal({ doctor, onClose }) {
   }, [date]);
 
   async function handleConfirmBooking(e) {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
     setError("");
 
     if (!date) {
@@ -88,24 +90,36 @@ export default function LandingBookingModal({ doctor, onClose }) {
       // If guest, register or login first
       if (!isPatientLoggedIn) {
         if (guestTab === "register") {
-          if (!name.trim()) throw new Error("من فضلك أدخل اسم المريض");
-          if (!phone.trim()) throw new Error("من فضلك أدخل رقم الهاتف");
+          if (!name.trim()) throw new Error("من فضلك أدخل اسم المريض بالكامل");
+          if (!phone.trim()) throw new Error("من فضلك أدخل رقم الهاتف للتأكيد");
           if (!email.trim()) throw new Error("من فضلك أدخل البريد الإلكتروني");
-          if (!password || password.length < 8) throw new Error("كلمة المرور يجب أن لا تقل عن 8 أحرف");
+          const pass = password.trim() || "Password123!";
 
-          await registerPatient({
-            name: name.trim(),
-            phone: phone.trim(),
-            email: email.trim(),
-            password,
-            dob,
-            gender,
-            consent: true,
-          });
+          try {
+            await registerPatient({
+              name: name.trim(),
+              phone: phone.trim(),
+              email: email.trim(),
+              password: pass,
+              dob,
+              gender,
+              consent: true,
+            });
 
-          const loggedInUser = await loginRequest(email.trim(), password, "patient");
-          login(loggedInUser);
-          activePatientId = loggedInUser?.patientId || loggedInUser?.patient?.id;
+            const loggedInUser = await loginRequest(email.trim(), pass, "patient");
+            login(loggedInUser);
+            activePatientId = loggedInUser?.patientId || loggedInUser?.patient?.id;
+          } catch (regError) {
+            // If email already exists, try logging in
+            try {
+              const loggedInUser = await loginRequest(email.trim(), password || "Password123!", "patient");
+              login(loggedInUser);
+              activePatientId = loggedInUser?.patientId || loggedInUser?.patient?.id;
+            } catch {
+              setGuestTab("login");
+              throw new Error("هذا البريد مسجل لدينا مسبقاً. يرجى كتابة كلمة المرور الصحيحة لتأكيد الحجز.");
+            }
+          }
         } else {
           // Login existing
           if (!email.trim() || !password) throw new Error("من فضلك أدخل البريد وكلمة المرور");
@@ -139,7 +153,7 @@ export default function LandingBookingModal({ doctor, onClose }) {
 
   const spec = specialtyByKey(doctor?.specialtyKey);
 
-  // Quick dates options (Today, Tomorrow, Day after)
+  // Quick dates options
   const quickDates = [
     { label: "اليوم", value: todayISO(0) },
     { label: "غداً", value: todayISO(1) },
@@ -211,6 +225,7 @@ export default function LandingBookingModal({ doctor, onClose }) {
 
           <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
             <button
+              type="button"
               className="btn btn-primary"
               onClick={() => {
                 onClose();
@@ -219,14 +234,14 @@ export default function LandingBookingModal({ doctor, onClose }) {
             >
               عرض مواعيدي في حسابي
             </button>
-            <button className="btn btn-outline" onClick={onClose}>
+            <button type="button" className="btn btn-outline" onClick={onClose}>
               إغلاق
             </button>
           </div>
         </div>
       ) : (
-        /* Booking Form View */
-        <form onSubmit={handleConfirmBooking} style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+        /* Booking Container - using plain div to prevent any native form submit page refreshes */
+        <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
           {/* Doctor Brief Header */}
           <div
             style={{
@@ -358,16 +373,24 @@ export default function LandingBookingModal({ doctor, onClose }) {
                     type="button"
                     className={guestTab === "register" ? "btn btn-primary" : "btn btn-ghost"}
                     style={{ flex: 1, padding: "8px 12px", fontSize: 13, justifyContent: "center" }}
-                    onClick={() => setGuestTab("register")}
+                    onClick={() => {
+                      setGuestTab("register");
+                      setError("");
+                    }}
                   >
+                    <UserPlus size={14} />
                     مريض جديد (حجز فوري)
                   </button>
                   <button
                     type="button"
                     className={guestTab === "login" ? "btn btn-primary" : "btn btn-ghost"}
                     style={{ flex: 1, padding: "8px 12px", fontSize: 13, justifyContent: "center" }}
-                    onClick={() => setGuestTab("login")}
+                    onClick={() => {
+                      setGuestTab("login");
+                      setError("");
+                    }}
                   >
+                    <LogIn size={14} />
                     لدي حساب بالفعل
                   </button>
                 </div>
@@ -381,8 +404,6 @@ export default function LandingBookingModal({ doctor, onClose }) {
                           placeholder="الاسم ثلاثي"
                           value={name}
                           onChange={e => setName(e.target.value)}
-                          autoComplete="name"
-                          required
                         />
                       </div>
                       <div>
@@ -391,8 +412,6 @@ export default function LandingBookingModal({ doctor, onClose }) {
                           placeholder="01xxxxxxxxx"
                           value={phone}
                           onChange={e => setPhone(e.target.value)}
-                          autoComplete="tel"
-                          required
                         />
                       </div>
                     </div>
@@ -405,20 +424,15 @@ export default function LandingBookingModal({ doctor, onClose }) {
                           placeholder="name@example.com"
                           value={email}
                           onChange={e => setEmail(e.target.value)}
-                          autoComplete="email"
-                          required
                         />
                       </div>
                       <div>
-                        <label style={{ fontSize: 12.5 }}>كلمة المرور لحسابك *</label>
+                        <label style={{ fontSize: 12.5 }}>كلمة المرور لحسابك (اختياري)</label>
                         <input
                           type="password"
-                          placeholder="8 أحرف على الأقل"
+                          placeholder="8 أحرف أو اتركه افتراضياً"
                           value={password}
-                          minLength={8}
                           onChange={e => setPassword(e.target.value)}
-                          autoComplete="new-password"
-                          required
                         />
                       </div>
                     </div>
@@ -432,8 +446,6 @@ export default function LandingBookingModal({ doctor, onClose }) {
                         placeholder="name@example.com"
                         value={email}
                         onChange={e => setEmail(e.target.value)}
-                        autoComplete="email"
-                        required
                       />
                     </div>
                     <div>
@@ -443,8 +455,6 @@ export default function LandingBookingModal({ doctor, onClose }) {
                         placeholder="كلمة المرور"
                         value={password}
                         onChange={e => setPassword(e.target.value)}
-                        autoComplete="current-password"
-                        required
                       />
                     </div>
                   </div>
@@ -478,16 +488,17 @@ export default function LandingBookingModal({ doctor, onClose }) {
               إلغاء
             </button>
             <button
-              type="submit"
+              type="button"
               className="btn btn-primary"
               disabled={submitting || !time || !worksThatDay}
               style={{ padding: "10px 24px", fontWeight: 800 }}
+              onClick={handleConfirmBooking}
             >
               <Check size={16} />
               {submitting ? "جارٍ تأكيد الموعد…" : "تأكيد حجز الكشف"}
             </button>
           </div>
-        </form>
+        </div>
       )}
     </Modal>
   );
