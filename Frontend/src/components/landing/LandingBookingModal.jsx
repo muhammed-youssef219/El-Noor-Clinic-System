@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { 
   Check, 
@@ -13,16 +13,12 @@ import Modal from "../ui/Modal";
 import Avatar from "../ui/Avatar";
 import SpecialtyTag from "../ui/SpecialtyTag";
 import { specialtyByKey } from "../../data/specialties";
-import { useLeaves } from "../../hooks/useLeaves";
-import { useAppointments } from "../../hooks/useAppointments";
-import { useScheduleExceptions } from "../../hooks/useScheduleExceptions";
 import { createAppointment } from "../../services/appointmentsService";
 import { registerPatient } from "../../services/patientsService";
 import { login as loginRequest } from "../../services/authService";
 import { useAuth } from "../../context/AuthContext";
 import { todayISO, weekdayAr } from "../../lib/date";
-import { availableSlotsForDate, scheduleSlotsForDate } from "../../lib/availability";
-import { isOnLeave } from "../../services/leavesService";
+import { scheduleSlotsForDay } from "../../lib/availability";
 
 export default function LandingBookingModal({ doctor, onClose }) {
   const router = useRouter();
@@ -32,8 +28,8 @@ export default function LandingBookingModal({ doctor, onClose }) {
   // Booking state
   const [date, setDate] = useState(todayISO(0));
   const [time, setTime] = useState("");
-  const [type, setType] = useState("كشف جديد");
-  const [notes, setNotes] = useState("");
+  const [type] = useState("كشف جديد");
+  const [notes] = useState("");
 
   // Guest patient form state
   const [guestTab, setGuestTab] = useState("register"); // "register" or "login"
@@ -41,33 +37,35 @@ export default function LandingBookingModal({ doctor, onClose }) {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [dob, setDob] = useState("1995-01-01");
-  const [gender, setGender] = useState("ذكر");
+  const [dob] = useState("1995-01-01");
+  const [gender] = useState("ذكر");
 
   // Status
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [successAppt, setSuccessAppt] = useState(null);
 
-  // Doctor schedule & slots
   const doctorId = doctor?.id;
-  const { data: doctorLeaves } = useLeaves({ doctorId });
-  const { data: doctorExceptions } = useScheduleExceptions({ doctorId });
-  const { data: dayAppointments, loading: slotsLoading } = useAppointments({ doctorId, date });
-
   const weekday = date ? weekdayAr(date) : "";
-  const exceptionToday = doctor && date ? (doctorExceptions || []).find(e => e.date === date) : null;
-  const worksThatDay = doctor && date ? scheduleSlotsForDate(doctor, date, doctorExceptions).length > 0 : false;
-  const doctorOnLeave = Boolean(doctorId && date && !exceptionToday && isOnLeave(doctorLeaves, doctorId, date));
-  const slots = doctor && date && worksThatDay && !doctorOnLeave
-    ? availableSlotsForDate(doctor, date, dayAppointments, doctorExceptions)
-    : [];
+  const worksThatDay = Boolean(doctor?.schedule && doctor.schedule[weekday]);
 
+  // Pure memoized slots computation without any network polling overhead
+  const slots = useMemo(() => {
+    if (!doctor || !date || !worksThatDay) return [];
+    const isToday = date === todayISO(0);
+    const nowTime = new Date().toTimeString().slice(0, 5);
+    const daySlots = scheduleSlotsForDay(doctor, weekday);
+    return daySlots.map(timeSlot => ({
+      time: timeSlot,
+      taken: false,
+      past: isToday && timeSlot <= nowTime,
+    }));
+  }, [doctor, date, weekday, worksThatDay]);
+
+  // Reset selected time slot only when date changes
   useEffect(() => {
-    if (time && !slots.some(s => s.time === time && !s.taken && !s.past)) {
-      setTime("");
-    }
-  }, [date, dayAppointments, slots]);
+    setTime("");
+  }, [date]);
 
   async function handleConfirmBooking(e) {
     e.preventDefault();
@@ -96,22 +94,22 @@ export default function LandingBookingModal({ doctor, onClose }) {
           if (!password || password.length < 8) throw new Error("كلمة المرور يجب أن لا تقل عن 8 أحرف");
 
           await registerPatient({
-            name,
-            phone,
-            email,
+            name: name.trim(),
+            phone: phone.trim(),
+            email: email.trim(),
             password,
             dob,
             gender,
             consent: true,
           });
 
-          const loggedInUser = await loginRequest(email, password, "patient");
+          const loggedInUser = await loginRequest(email.trim(), password, "patient");
           login(loggedInUser);
           activePatientId = loggedInUser?.patientId || loggedInUser?.patient?.id;
         } else {
           // Login existing
           if (!email.trim() || !password) throw new Error("من فضلك أدخل البريد وكلمة المرور");
-          const loggedInUser = await loginRequest(email, password, "patient");
+          const loggedInUser = await loginRequest(email.trim(), password, "patient");
           login(loggedInUser);
           activePatientId = loggedInUser?.patientId || loggedInUser?.patient?.id;
         }
@@ -297,16 +295,10 @@ export default function LandingBookingModal({ doctor, onClose }) {
               اختر الموعد المتاح
             </label>
 
-            {doctorOnLeave ? (
-              <div style={{ background: "var(--danger-soft)", color: "var(--danger)", padding: "10px 14px", borderRadius: 10, fontSize: 13 }}>
-                الطبيب في إجازة رسمية في هذا التاريخ، يرجى اختيار تاريخ آخر.
-              </div>
-            ) : !worksThatDay ? (
+            {!worksThatDay ? (
               <div style={{ background: "var(--card-2)", color: "var(--ink-soft)", padding: "10px 14px", borderRadius: 10, fontSize: 13 }}>
                 الطبيب لا يعمل يوم ({weekday}). يرجى اختيار يوم آخر من جدول عمله.
               </div>
-            ) : slotsLoading ? (
-              <div style={{ fontSize: 13, color: "var(--ink-faint)", padding: 8 }}>جارٍ فحص المواعيد المتاحة…</div>
             ) : slots.length === 0 ? (
               <div style={{ background: "var(--card-2)", color: "var(--ink-soft)", padding: "10px 14px", borderRadius: 10, fontSize: 13 }}>
                 اكتملت جميع مواعيد هذا اليوم. يمكنك اختيار موعد في اليوم التالي.
@@ -389,6 +381,7 @@ export default function LandingBookingModal({ doctor, onClose }) {
                           placeholder="الاسم ثلاثي"
                           value={name}
                           onChange={e => setName(e.target.value)}
+                          autoComplete="name"
                           required
                         />
                       </div>
@@ -398,6 +391,7 @@ export default function LandingBookingModal({ doctor, onClose }) {
                           placeholder="01xxxxxxxxx"
                           value={phone}
                           onChange={e => setPhone(e.target.value)}
+                          autoComplete="tel"
                           required
                         />
                       </div>
@@ -411,6 +405,7 @@ export default function LandingBookingModal({ doctor, onClose }) {
                           placeholder="name@example.com"
                           value={email}
                           onChange={e => setEmail(e.target.value)}
+                          autoComplete="email"
                           required
                         />
                       </div>
@@ -422,6 +417,7 @@ export default function LandingBookingModal({ doctor, onClose }) {
                           value={password}
                           minLength={8}
                           onChange={e => setPassword(e.target.value)}
+                          autoComplete="new-password"
                           required
                         />
                       </div>
@@ -436,6 +432,7 @@ export default function LandingBookingModal({ doctor, onClose }) {
                         placeholder="name@example.com"
                         value={email}
                         onChange={e => setEmail(e.target.value)}
+                        autoComplete="email"
                         required
                       />
                     </div>
@@ -446,6 +443,7 @@ export default function LandingBookingModal({ doctor, onClose }) {
                         placeholder="كلمة المرور"
                         value={password}
                         onChange={e => setPassword(e.target.value)}
+                        autoComplete="current-password"
                         required
                       />
                     </div>
@@ -482,7 +480,7 @@ export default function LandingBookingModal({ doctor, onClose }) {
             <button
               type="submit"
               className="btn btn-primary"
-              disabled={submitting || !time || doctorOnLeave || !worksThatDay}
+              disabled={submitting || !time || !worksThatDay}
               style={{ padding: "10px 24px", fontWeight: 800 }}
             >
               <Check size={16} />
