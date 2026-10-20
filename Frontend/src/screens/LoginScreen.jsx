@@ -75,8 +75,10 @@ export default function LoginScreen() {
           </div>
         )}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-          <button className="btn btn-ghost" onClick={() => setStep("patient-register")}><UserPlus size={14} /> مريض جديد</button>
-          <button className="btn btn-ghost" onClick={() => setStep("role")} style={{ fontSize: 12.5, color: "var(--ink-faint)" }}>جميع خيارات الدخول</button>
+          <span style={{ fontWeight: 800, fontSize: 15 }}>تسجيل دخول مريض</span>
+          <button className="btn btn-ghost" onClick={() => setStep("patient-register")} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontWeight: 700, fontSize: 13 }}>
+            <UserPlus size={14} /> مريض جديد؟ إنشاء حساب
+          </button>
         </div>
         <form onSubmit={handlePatientLogin} style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 4 }}>
           <input type="email" value={patientEmail} onChange={event => setPatientEmail(event.target.value)} placeholder="البريد الإلكتروني" autoComplete="email" />
