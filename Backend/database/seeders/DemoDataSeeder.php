@@ -16,15 +16,17 @@ class DemoDataSeeder extends Seeder
 {
     public function run(): void
     {
-        $admin = User::query()->firstOrCreate(
-            ['email' => 'admin@alnoor.test'],
-            ['name' => 'مدير عيادات النور', 'phone' => '01000000001', 'password' => 'Password123!', 'role' => 'admin', 'status' => 'active'],
-        );
+        $admin = User::query()->where('email', 'admin@alnoor.test')->orWhere('email', 'admin@gmail.com')->first()
+            ?: User::query()->updateOrCreate(
+                ['phone' => '01000000001'],
+                ['email' => 'admin@alnoor.test', 'name' => 'مدير عيادات النور', 'password' => 'Password123!', 'role' => 'admin', 'status' => 'active'],
+            );
 
-        $reception = User::query()->firstOrCreate(
-            ['email' => 'reception@alnoor.test'],
-            ['name' => 'سارة أحمد', 'phone' => '01000000002', 'password' => 'Password123!', 'role' => 'reception', 'status' => 'active'],
-        );
+        $reception = User::query()->where('email', 'reception@alnoor.test')->orWhere('email', 'reception@gmail.com')->first()
+            ?: User::query()->updateOrCreate(
+                ['phone' => '01000000002'],
+                ['email' => 'reception@alnoor.test', 'name' => 'سارة أحمد', 'password' => 'Password123!', 'role' => 'reception', 'status' => 'active'],
+            );
 
         $doctorDefinitions = [
             ['email' => 'dr.noura@alnoor.test', 'name' => 'د. نورا خالد', 'phone' => '01000000011', 'specialty' => 'cardiology', 'license' => 'CARD-1024', 'experience' => 12, 'price' => 550],
