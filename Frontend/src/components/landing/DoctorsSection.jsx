@@ -18,7 +18,11 @@ export default function DoctorsSection() {
   const list = filterSpecialty ? (doctors || []).filter(d => d.specialtyKey === filterSpecialty) : (doctors || []);
 
   function handleBook(doctor) {
-    setBookingDoctor(doctor);
+    if (role === "patient") {
+      setBookingDoctor(doctor);
+    } else {
+      router.push(`/login?role=patient&doctorId=${doctor.id}&step=register`);
+    }
   }
 
   if (loading) {

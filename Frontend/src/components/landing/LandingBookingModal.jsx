@@ -194,9 +194,58 @@ export default function LandingBookingModal({ doctor, onClose }) {
   ];
 
   return (
-    <Modal title="حجز كشف طبي مباشر" onClose={onClose} width={560}>
-      {/* Success View */}
-      {successAppt ? (
+    <Modal title={!isPatientLoggedIn ? "تسجيل حساب مطلوب" : "حجز كشف طبي مباشر"} onClose={onClose} width={!isPatientLoggedIn ? 460 : 560}>
+      {!isPatientLoggedIn ? (
+        <div style={{ textAlign: "center", padding: "20px 8px" }}>
+          <div
+            style={{
+              width: 56,
+              height: 56,
+              borderRadius: "50%",
+              background: "var(--primary-soft)",
+              color: "var(--primary)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              margin: "0 auto 16px",
+            }}
+          >
+            <UserPlus size={28} />
+          </div>
+
+          <h3 style={{ fontSize: 19, fontWeight: 900, margin: "0 0 8px", color: "var(--ink)" }}>
+            تسجيل حساب مطلوب لإتمام الحجز
+          </h3>
+          <p style={{ color: "var(--ink-soft)", fontSize: 13.5, lineHeight: 1.6, margin: "0 0 24px" }}>
+            لحجز موعدك الطبي مع <strong>{doctor?.name}</strong> ومتابعة نتائج الكشف، يرجى تسجيل حسابك أو تسجيل الدخول أولاً.
+          </p>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <button
+              type="button"
+              className="btn btn-primary"
+              style={{ padding: "11px 20px", fontWeight: 800, justifyContent: "center" }}
+              onClick={() => {
+                onClose();
+                router.push(`/login?role=patient&doctorId=${doctor?.id}&step=register`);
+              }}
+            >
+              <UserPlus size={16} /> إنشاء حساب مريض جديد
+            </button>
+            <button
+              type="button"
+              className="btn btn-outline"
+              style={{ padding: "10px 20px", justifyContent: "center" }}
+              onClick={() => {
+                onClose();
+                router.push(`/login?role=patient&doctorId=${doctor?.id}`);
+              }}
+            >
+              <LogIn size={16} /> لدي حساب بالفعل (تسجيل الدخول)
+            </button>
+          </div>
+        </div>
+      ) : successAppt ? (
         <div style={{ textAlign: "center", padding: "16px 8px" }}>
           <div
             style={{

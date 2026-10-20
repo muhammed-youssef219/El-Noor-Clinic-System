@@ -25,9 +25,14 @@ export default function LoginScreen() {
   const idleLogout = searchParams.get("reason") === "idle";
   const initialRole = searchParams.get("role");
   const doctorIdParam = searchParams.get("doctorId");
+  const stepParam = searchParams.get("step");
 
   const [step, setStep] = useState(
-    initialRole === "patient" || doctorIdParam ? "patient-login" : "role"
+    stepParam === "register"
+      ? "patient-register"
+      : initialRole === "patient" || doctorIdParam
+      ? "patient-login"
+      : "role"
   );
   const [patientEmail, setPatientEmail] = useState("");
   const [patientPassword, setPatientPassword] = useState("");
@@ -80,7 +85,24 @@ export default function LoginScreen() {
           <button className="btn btn-primary" type="submit" disabled={submitting}><LogIn size={15} /> {submitting ? "جارٍ تسجيل الدخول…" : "دخول ومتابعة الحجز"}</button>
         </form>
       </div>}
-      {step === "patient-register" && <PatientRegisterForm onBack={() => setStep("patient-login")} onRegistered={(user, registeredDocId) => { login(user); const targetDoc = registeredDocId || doctorIdParam; router.replace(targetDoc ? `/patient/book?doctorId=${targetDoc}` : "/patient/book"); }} />}
+      {step === "patient-register" && (
+        <div>
+          {doctorIdParam && (
+            <div style={{ background: "var(--primary-soft)", color: "var(--primary)", padding: "10px 14px", borderRadius: 10, fontSize: 13, marginBottom: 14, fontWeight: 700, display: "flex", alignItems: "center", gap: 8 }}>
+              <Info size={16} />
+              أنشئ حسابك لإتمام حجز موعدك الطبي مع الطبيب المختار
+            </div>
+          )}
+          <PatientRegisterForm
+            onBack={() => setStep("patient-login")}
+            onRegistered={(user, registeredDocId) => {
+              login(user);
+              const targetDoc = registeredDocId || doctorIdParam;
+              router.replace(targetDoc ? `/patient/book?doctorId=${targetDoc}` : "/patient/book");
+            }}
+          />
+        </div>
+      )}
     </div>
   </div>;
 }

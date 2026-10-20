@@ -19,13 +19,7 @@ export default function HeroSection() {
     if (role === "patient") {
       router.push("/patient/book");
     } else {
-      e?.preventDefault();
-      const el = document.getElementById("doctors");
-      if (el) {
-        el.scrollIntoView({ behavior: "smooth" });
-      } else {
-        router.push("#doctors");
-      }
+      router.push("/login?role=patient&step=register");
     }
   }
 

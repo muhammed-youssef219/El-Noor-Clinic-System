@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Check } from "lucide-react";
+import { Check, LogIn } from "lucide-react";
 import { registerPatient } from "../../services/patientsService";
 import { login } from "../../services/authService";
 
@@ -30,7 +30,12 @@ export default function PatientRegisterForm({ onRegistered, onBack }) {
   }
 
   return <div className="card" style={{ padding: 20 }}>
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}><span style={{ fontWeight: 800, fontSize: 14 }}>تسجيل مريض جديد</span><button className="btn btn-ghost" onClick={onBack}>رجوع</button></div>
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+      <span style={{ fontWeight: 800, fontSize: 15 }}>تسجيل مريض جديد</span>
+      <button className="btn btn-ghost" onClick={onBack} style={{ fontSize: 12.5, display: "inline-flex", alignItems: "center", gap: 5 }}>
+        <LogIn size={13} /> لدي حساب بالفعل
+      </button>
+    </div>
     <form onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       <div><label>الاسم الكامل *</label><input value={form.name} onChange={event => update("name", event.target.value)} /></div>
       <div className="split-grid" style={{ gap: 12 }}><div><label>البريد الإلكتروني *</label><input type="email" value={form.email} onChange={event => update("email", event.target.value)} autoComplete="email" /></div><div><label>كلمة المرور *</label><input type="password" value={form.password} onChange={event => update("password", event.target.value)} minLength="8" autoComplete="new-password" /></div></div>
