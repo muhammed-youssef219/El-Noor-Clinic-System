@@ -4,20 +4,21 @@ import { Star, CalendarDays, Plus } from "lucide-react";
 import Avatar from "../ui/Avatar";
 import SpecialtyTag from "../ui/SpecialtyTag";
 import { SkeletonCards } from "../ui/Skeleton";
+import LandingBookingModal from "./LandingBookingModal";
 import { useDoctors } from "../../hooks/useDoctors";
 import { useAuth } from "../../context/AuthContext";
 import { SPECIALTIES, specialtyByKey } from "../../data/specialties";
 
 export default function DoctorsSection() {
   const [filterSpecialty, setFilterSpecialty] = useState("");
+  const [bookingDoctor, setBookingDoctor] = useState(null);
   const router = useRouter();
   const { role } = useAuth();
   const { data: doctors, loading } = useDoctors();
   const list = filterSpecialty ? (doctors || []).filter(d => d.specialtyKey === filterSpecialty) : (doctors || []);
 
-  function handleBook(doctorId) {
-    if (role === "patient") router.push(`/patient/book?doctorId=${doctorId}`);
-    else router.push(`/login?role=patient&doctorId=${doctorId}`);
+  function handleBook(doctor) {
+    setBookingDoctor(doctor);
   }
 
   if (loading) {
@@ -63,13 +64,20 @@ export default function DoctorsSection() {
                 <CalendarDays size={13} style={{ marginTop: 1, flexShrink: 0 }} />
                 <span>{Object.keys(d.schedule).join("، ")}</span>
               </div>
-              <button className="btn btn-primary" style={{ width: "100%", justifyContent: "center" }} onClick={() => handleBook(d.id)}>
+              <button className="btn btn-primary" style={{ width: "100%", justifyContent: "center" }} onClick={() => handleBook(d)}>
                 <Plus size={14} /> احجز مع الدكتور
               </button>
             </div>
           );
         })}
       </div>
+
+      {bookingDoctor && (
+        <LandingBookingModal
+          doctor={bookingDoctor}
+          onClose={() => setBookingDoctor(null)}
+        />
+      )}
     </section>
   );
 }
